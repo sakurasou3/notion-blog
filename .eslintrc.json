@@ -1,7 +1,11 @@
 {
-  "extends": ["next/core-web-vitals", "prettier"],
+  "extends": [
+    "next/core-web-vitals",
+    "prettier",
+    "plugin:tailwindcss/recommended"
+  ],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "prettier"],
+  "plugins": ["@typescript-eslint", "prettier", "tailwindcss"],
   "overrides": [
     {
       "files": ["*.ts", ".tsx"],
@@ -17,5 +21,5 @@
         "import/namespace": "off"
       }
     }
-  ]  
+  ]
 }
