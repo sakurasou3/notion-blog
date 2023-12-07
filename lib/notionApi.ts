@@ -1,7 +1,8 @@
 import { Client } from "@notionhq/client";
+import { NotionToMarkdown } from "notion-to-md";
 
 export type MetaData = {
-  id: number;
+  id: string;
   title: string;
   description: string;
   date: string;
@@ -9,9 +10,12 @@ export type MetaData = {
   tags: Array<string>;
 };
 
+const POST_SLICE_NUM = 4;
+
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
+const n2m = new NotionToMarkdown({ notionClient: notion });
 
 export const getAllPosts = async () => {
   const posts = await notion.databases.query({
@@ -41,7 +45,40 @@ export const getSinglePost = async (slug: string) => {
         },
       },
     },
+    sorts: [
+      {
+        timestamp: "created_time",
+        direction: "descending",
+      },
+    ],
   });
+  const metaData = getPageMetaData(response.results[0]);
 
-  return getPageMetaData(response.results[0]);
+  // 本文をマークダウン形式で取得
+  const mdBlocks = await n2m.pageToMarkdown(metaData.id);
+  const mdString = n2m.toMarkdownString(mdBlocks);
+
+  return { ...metaData, markdown: mdString.parent };
+};
+
+/** TOPページ用記事の取得（4つ） */
+export const getPostsForTopPage = async () =>
+  (await getAllPosts()).slice(0, POST_SLICE_NUM);
+
+/** ページ番号に応じた記事取得 */
+export const getPostsByPage = async (page: number) =>
+  (await getAllPosts()).slice(
+    (page - 1) * POST_SLICE_NUM,
+    page * POST_SLICE_NUM
+  );
+
+/** ページネーション数を取得 */
+export const getNumberOfPages = async () => {
+  const allPosts = await getAllPosts();
+  const div = Math.floor(allPosts.length / POST_SLICE_NUM);
+  const mod = allPosts.length % POST_SLICE_NUM;
+  if (mod === 0) {
+    return div;
+  }
+  return div + 1;
 };
