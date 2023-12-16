@@ -1,14 +1,14 @@
-import { PostBody } from "@/components/Post/PostBody";
-import { MetaData, getAllPosts, getSinglePost } from "@/lib/notionApi";
-import Link from "next/link";
-import React from "react";
+import { PostBody } from '@/components/Post/PostBody';
+import { getAllPosts, getSinglePost, MetaData } from '@/lib/notionApi';
+import Link from 'next/link';
+import React from 'react';
 
 export const getStaticPaths = async () => {
   const allPosts = await getAllPosts();
   const paths = allPosts.map(({ slug }) => ({ params: { slug } }));
   return {
     paths,
-    fallback: "blocking", // falseだと404が表示される
+    fallback: 'blocking', // falseだと404が表示される
   };
 };
 
@@ -35,8 +35,7 @@ export default function Post({
       {post.tags?.map((tag, index) => (
         <p
           key={index}
-          className="text-white bg-sky-900 rounded-full font-medium mt-2 mr-2 px-2 py-1 inline-block"
-        >
+          className="text-white bg-sky-900 rounded-full font-medium mt-2 mr-2 px-2 py-1 inline-block">
           {tag}
         </p>
       ))}

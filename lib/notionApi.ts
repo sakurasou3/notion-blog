@@ -1,5 +1,5 @@
-import { Client } from "@notionhq/client";
-import { NotionToMarkdown } from "notion-to-md";
+import { Client } from '@notionhq/client';
+import { NotionToMarkdown } from 'notion-to-md';
 
 export type MetaData = {
   id: string;
@@ -22,7 +22,7 @@ export const getAllPosts = async () => {
     database_id: process.env.NOTION_DATABASE_ID!,
     page_size: 100,
   });
-  return posts.results.map((post) => getPageMetaData(post));
+  return posts.results.map(post => getPageMetaData(post));
 };
 
 const getPageMetaData = (post: any): MetaData => ({
@@ -38,7 +38,7 @@ export const getSinglePost = async (slug: string) => {
   const response = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
-      property: "Slug",
+      property: 'Slug',
       formula: {
         string: {
           equals: slug,
@@ -47,8 +47,8 @@ export const getSinglePost = async (slug: string) => {
     },
     sorts: [
       {
-        timestamp: "created_time",
-        direction: "descending",
+        timestamp: 'created_time',
+        direction: 'descending',
       },
     ],
   });
@@ -69,7 +69,7 @@ export const getPostsForTopPage = async () =>
 export const getPostsByPage = async (page: number) =>
   (await getAllPosts()).slice(
     (page - 1) * POST_SLICE_NUM,
-    page * POST_SLICE_NUM
+    page * POST_SLICE_NUM,
   );
 
 /** ページネーション数を取得 */
@@ -81,4 +81,30 @@ export const getNumberOfPages = async () => {
     return div;
   }
   return div + 1;
+};
+
+/** 指定されたタグに応じた記事取得 */
+export const getPostsByTagAndPage = async (tagName: string, page: number) => {
+  const allPosts = await getAllPosts();
+  const posts = allPosts.filter(post => post.tags.find(tag => tag === tagName));
+  return posts.slice((page - 1) * POST_SLICE_NUM, page * POST_SLICE_NUM);
+};
+
+export const getNumberOfPagesByTag = async (tagName: string) => {
+  const allPosts = await getAllPosts();
+  const posts = allPosts.filter(post => post.tags.find(tag => tag === tagName));
+  const div = Math.floor(posts.length / POST_SLICE_NUM);
+  const mod = posts.length % POST_SLICE_NUM;
+  if (mod === 0) {
+    return div;
+  }
+  return div + 1;
+};
+
+export const getAllTags = async () => {
+  const allPosts = await getAllPosts();
+  const tagsDuplicationList = allPosts.flatMap(post => post.tags);
+  // 重複を除いてArray化する
+  const allTags = Array.from(new Set(tagsDuplicationList));
+  return allTags;
 };
