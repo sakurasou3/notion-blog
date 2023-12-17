@@ -21,6 +21,13 @@ export const getAllPosts = async () => {
   const posts = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     page_size: 100,
+    filter: {
+      property: 'Published',
+      checkbox: {
+        equals: true,
+      },
+    },
+    sorts: [{ property: 'Date', direction: 'descending' }],
   });
   return posts.results.map(post => getPageMetaData(post));
 };

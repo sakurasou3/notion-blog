@@ -1,5 +1,6 @@
 import { Pagination } from '@/components/Pagination/Pagination';
 import { SinglePost } from '@/components/Post/SinglePost';
+import { Tag } from '@/components/Tag/Tag';
 import {
   MetaData,
   getAllTags,
@@ -23,7 +24,6 @@ export const getStaticPaths = async () => {
       });
     }),
   );
-  console.error(JSON.stringify(paths.flat()));
   return {
     paths: paths.flat(),
     fallback: 'blocking',
@@ -35,10 +35,16 @@ export async function getStaticProps(context: {
 }) {
   const currentPage = Number(context.params?.page ?? 1);
   const currentTag = context.params?.tag.toString();
+  const numberOfPages = await getNumberOfPagesByTag(context.params?.tag);
   const posts = await getPostsByTagAndPage(currentTag, currentPage);
+  const allTags = await getAllTags();
   return {
     props: {
       posts,
+      allTags,
+      currentPage,
+      numberOfPages,
+      currentTag,
     },
     revalidate: 60,
   };
@@ -46,9 +52,18 @@ export async function getStaticProps(context: {
 
 type Props = {
   posts: MetaData[];
+  allTags: Array<string>;
+  currentPage: number;
   numberOfPages: number;
+  currentTag: string;
 };
-export default function BlogTagPageList({ posts, numberOfPages }: Props) {
+export default function BlogTagPageList({
+  posts,
+  allTags,
+  currentPage,
+  numberOfPages,
+  currentTag,
+}: Props) {
   return (
     <div className="container w-full h-full mx-auto">
       <Head>
@@ -68,7 +83,12 @@ export default function BlogTagPageList({ posts, numberOfPages }: Props) {
             </div>
           ))}
         </section>
-        <Pagination numberOfPages={numberOfPages} />
+        <Pagination
+          tag={currentTag}
+          numberOfPages={numberOfPages}
+          currentPage={currentPage}
+        />
+        <Tag tags={allTags} />
       </main>
     </div>
   );

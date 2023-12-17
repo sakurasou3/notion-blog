@@ -36,7 +36,7 @@ export default function Post({
         <p
           key={index}
           className="text-white bg-sky-900 rounded-full font-medium mt-2 mr-2 px-2 py-1 inline-block">
-          {tag}
+          <Link href={`/posts/tag/${tag}/1`}>{tag}</Link>
         </p>
       ))}
       <PostBody body={post.markdown} />

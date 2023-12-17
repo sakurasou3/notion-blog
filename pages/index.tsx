@@ -1,16 +1,19 @@
-import { SinglePost } from "@/components/Post/SinglePost";
-import { MetaData, getPostsForTopPage } from "@/lib/notionApi";
-import Head from "next/head";
-import Link from "next/link";
+import { SinglePost } from '@/components/Post/SinglePost';
+import { Tag } from '@/components/Tag/Tag';
+import { MetaData, getAllTags, getPostsForTopPage } from '@/lib/notionApi';
+import Head from 'next/head';
+import Link from 'next/link';
 
 // SSG(ISR)の設定
 // build時にデータを全てレンダリング→その後60sに一度レンダリングし直し、最新に保つ
 // (参考)https://nextjs.org/docs/pages/building-your-application/data-fetching/get-static-props
 export async function getStaticProps() {
   const allPosts = await getPostsForTopPage();
+  const allTags = await getAllTags();
   return {
     props: {
       allPosts,
+      allTags,
     },
     revalidate: 60,
   };
@@ -18,8 +21,9 @@ export async function getStaticProps() {
 
 type Props = {
   allPosts: MetaData[];
+  allTags: Array<string>;
 };
-export default function Home({ allPosts }: Props) {
+export default function Home({ allPosts, allTags }: Props) {
   return (
     <div className="container w-full h-full mx-auto">
       <Head>
@@ -39,10 +43,10 @@ export default function Home({ allPosts }: Props) {
         ))}
         <Link
           href="/posts/page/1"
-          className="mb-6 lg:w-1/2 mx-auto px-5 block text-right text-sky-900"
-        >
+          className="mb-6 lg:w-1/2 mx-auto px-5 block text-right text-sky-900">
           ...もっと見る
         </Link>
+        <Tag tags={allTags} />
       </main>
     </div>
   );

@@ -1,18 +1,24 @@
-import { Pagination } from "@/components/Pagination/Pagination";
-import { SinglePost } from "@/components/Post/SinglePost";
-import { MetaData, getNumberOfPages, getPostsByPage } from "@/lib/notionApi";
-import Head from "next/head";
+import { Pagination } from '@/components/Pagination/Pagination';
+import { SinglePost } from '@/components/Post/SinglePost';
+import { Tag } from '@/components/Tag/Tag';
+import {
+  MetaData,
+  getAllTags,
+  getNumberOfPages,
+  getPostsByPage,
+} from '@/lib/notionApi';
+import Head from 'next/head';
 
 export const getStaticPaths = async () => {
   const page = await getNumberOfPages();
-  const paths = new Array(page).map((p) => ({
+  const paths = new Array(page).map(p => ({
     params: {
       page: p,
     },
   }));
   return {
     paths,
-    fallback: "blocking",
+    fallback: 'blocking',
   };
 };
 
@@ -22,9 +28,12 @@ export const getStaticPaths = async () => {
 export async function getStaticProps({ params }: { params: { page: number } }) {
   const allPosts = await getPostsByPage(params.page);
   const numberOfPages = await getNumberOfPages();
+  const allTags = await getAllTags();
   return {
     props: {
       allPosts,
+      allTags,
+      currentPage: Number(params.page),
       numberOfPages,
     },
     revalidate: 60,
@@ -33,9 +42,16 @@ export async function getStaticProps({ params }: { params: { page: number } }) {
 
 type Props = {
   allPosts: MetaData[];
+  allTags: Array<string>;
+  currentPage: number;
   numberOfPages: number;
 };
-export default function BlogPageList({ allPosts, numberOfPages }: Props) {
+export default function BlogPageList({
+  allPosts,
+  allTags,
+  currentPage,
+  numberOfPages,
+}: Props) {
   return (
     <div className="container w-full h-full mx-auto">
       <Head>
@@ -55,8 +71,9 @@ export default function BlogPageList({ allPosts, numberOfPages }: Props) {
             </div>
           ))}
         </section>
-        <Pagination numberOfPages={numberOfPages} />
+        <Pagination numberOfPages={numberOfPages} currentPage={currentPage} />
       </main>
+      <Tag tags={allTags} />
     </div>
   );
 }
